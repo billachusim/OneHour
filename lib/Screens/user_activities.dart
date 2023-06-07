@@ -1,0 +1,256 @@
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:oneHour/Screens/question_details.dart';
+import '../Models/questionModel.dart';
+import '../Services/firebaseServices.dart';
+import '../bottom_nav.dart';
+import 'login/login.dart';
+
+class ActivitiesScreen extends StatefulWidget {
+
+  const ActivitiesScreen({Key? key,}) : super(key: key);
+
+  @override
+  _ActivitiesScreenState createState() => _ActivitiesScreenState();
+}
+
+const int maxFailedLoadAttempts = 3;
+
+
+class _ActivitiesScreenState extends State<ActivitiesScreen> {
+  var currentUser = FirebaseAuth.instance.currentUser;
+  FirebaseServices firebaseServices = FirebaseServices();
+
+
+
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+
+
+
+  deleteAccountAlertDialog(BuildContext context) {
+
+    // set up the buttons
+    Widget cancelButton = TextButton(
+      child: Text("NO, WAIT!"),
+      onPressed:  () {
+        Navigator.of(context).pop();
+      },
+    );
+
+    Widget continueButton = TextButton(
+      child: Text("YES, DELETE EGO."),
+      onPressed:  () {
+        firebaseServices.deleteUserAccount(context, currentUser!.uid);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => LoginPage()),
+        );
+        },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Delete your account and all your data?"),
+      content: Text("Do you really want to delete your account and all your data?"),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: (){
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => BottomNavBar()),
+        );
+        return Future.value(false);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('My Questions'),
+          automaticallyImplyLeading: true,
+          actions: [
+            PopupMenuButton(
+              itemBuilder: (BuildContext context) => [
+                PopupMenuItem(
+                  child: Text('Delete Account'),
+                  value: 'delete',
+                ),
+              ],
+              onSelected: (value) {
+                // Handle item selection
+                if (value == 'delete') {
+                  // Handle settings selection
+                  deleteAccountAlertDialog(context);
+                }
+              },
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+
+            StreamBuilder<List<Question>>(
+              stream: getQuestions(currentUser!.uid),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(
+                    child: Text('No questions yet'),
+                  );
+                }
+
+                return Flexible(
+                  child: ListView.builder(
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      final question = snapshot.data![index];
+                      return GestureDetector(
+                        onTap: () async {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Getting answers; might see an ad.'),
+                            ),
+                          );
+                          // Navigate to the QuestionDetails screen and wait for a result.
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => QuestionDetails(question: question),
+                            ),
+                          );
+
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12.withOpacity(0.9),
+                                spreadRadius: 2,
+                                blurRadius: 3,
+                                offset: Offset(0, 3), // changes position of shadow
+                              ),
+                            ],
+                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.white70,
+                          ),
+                          margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                          padding: EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                question.question,
+                                style: TextStyle(
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: 8.0),
+                              Text(
+                                'Answer: ${question.answer}',
+                                maxLines: 3,
+                                style: TextStyle(
+                                  fontSize: 14.0,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              SizedBox(height: 5.0),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    child: Icon(
+                                      question.isFeatured == true ? Icons.lightbulb : Icons.lightbulb_outline,
+                                      color: Colors.green,
+                                      size: 26,
+                                    ),
+                                  ),
+
+                                  Container(
+                                    margin: EdgeInsets.only(bottom: 6),
+                                    padding: EdgeInsets.all(5),
+                                    width: 115,
+                                    height: 30,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                      gradient: LinearGradient(
+                                        begin: Alignment(-0.37857140550652835, -1.9473685559777252),
+                                        end: Alignment(1.2428571464417884, 2.526316110739735),
+                                        stops: [0.0, 0.856177031993866, 1.0],
+                                        colors: [
+                                          Colors.white54,
+                                          Colors.green,
+                                          Colors.lightGreenAccent,
+                                        ],
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Text('O P E N',
+                                        style: TextStyle(
+                                            fontSize: 15.0,
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.w700),
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Stream<List<Question>> getQuestions(String userId) {
+    return FirebaseFirestore.instance
+        .collection('questions')
+        .where('userId', isEqualTo: userId)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((querySnapshot) => querySnapshot.docs
+        .map((doc) => Question.fromJson(doc.data()))
+        .toList());
+  }
+}
