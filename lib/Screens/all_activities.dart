@@ -1,86 +1,26 @@
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:oneHour/Models/bookingModel.dart';
 import 'package:oneHour/Screens/question_details.dart';
-import '../Models/bookingModel.dart';
-import '../Services/firebaseServices.dart';
 import '../bottom_nav.dart';
-import 'login/login.dart';
+import '../models/questionModel.dart';
+import '../services/firebaseServices.dart';
 
-class ActivitiesScreen extends StatefulWidget {
+class AllActivitiesScreen extends StatefulWidget {
 
-  const ActivitiesScreen({Key? key,}) : super(key: key);
+  const AllActivitiesScreen({Key? key,}) : super(key: key);
 
   @override
-  _ActivitiesScreenState createState() => _ActivitiesScreenState();
+  _AllActivitiesScreenState createState() => _AllActivitiesScreenState();
 }
 
-const int maxFailedLoadAttempts = 3;
-
-
-class _ActivitiesScreenState extends State<ActivitiesScreen> {
+class _AllActivitiesScreenState extends State<AllActivitiesScreen> {
   var currentUser = FirebaseAuth.instance.currentUser;
-  FirebaseServices firebaseServices = FirebaseServices();
+  bool? isFeatured;
   DateTime now = DateTime.now();
 
 
-
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-
-
-
-  deleteAccountAlertDialog(BuildContext context) {
-
-    // set up the buttons
-    Widget cancelButton = TextButton(
-      child: Text("NO, WAIT!"),
-      onPressed:  () {
-        Navigator.of(context).pop();
-      },
-    );
-
-    Widget continueButton = TextButton(
-      child: Text("YES, DELETE EGO."),
-      onPressed:  () {
-        firebaseServices.deleteUserAccount(context, currentUser!.uid);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => LoginPage()),
-        );
-        },
-    );
-
-    // set up the AlertDialog
-    AlertDialog alert = AlertDialog(
-      title: Text("Delete your account and all your data?"),
-      content: Text("Do you really want to delete your account and all your data?"),
-      actions: [
-        cancelButton,
-        continueButton,
-      ],
-    );
-
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return alert;
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,32 +35,13 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Sessions'),
-          centerTitle: true,
+          title: Text('All Bookings'),
           automaticallyImplyLeading: true,
-          actions: [
-            PopupMenuButton(
-              itemBuilder: (BuildContext context) => [
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Text('Delete Account'),
-                ),
-              ],
-              onSelected: (value) {
-                // Handle item selection
-                if (value == 'delete') {
-                  // Handle settings selection
-                  deleteAccountAlertDialog(context);
-                }
-              },
-            ),
-          ],
         ),
         body: Column(
           children: [
-
             StreamBuilder<List<BookingModel>>(
-              stream: getBookings(currentUser!.uid),
+              stream: getAllBookings(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
@@ -139,9 +60,6 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, index) {
                       final booking = snapshot.data![index];
-                      final userId = booking.userId.toString();
-                      final nickname = booking.nickname.toString();
-
                       return GestureDetector(
                         onTap: () async {
                           Navigator.push(
@@ -243,14 +161,53 @@ class _ActivitiesScreenState extends State<ActivitiesScreen> {
     );
   }
 
-  Stream<List<BookingModel>> getBookings(String userId) {
+  Stream<List<BookingModel>> getAllBookings() {
     return FirebaseFirestore.instance
         .collection('bookings')
-        //.where('userId', isEqualTo: userId)
-        .orderBy('bookingStart', descending: true)
+        .orderBy('timeOfBooking', descending: true)
+        .limit(100)
         .snapshots()
         .map((querySnapshot) => querySnapshot.docs
         .map((doc) => BookingModel.fromJson(doc.data()))
         .toList());
   }
+
+
+  /// Edit feature
+
+  Future<bool?> setToFeatured(Question question) async {
+    final String questionId = question.questionId;
+    final value = true;
+    FirebaseFirestore.instance
+        .collection('bookings')
+        .doc(questionId)
+        .update({
+      "isFeatured": value,
+    },
+    );
+    logger.d('Successfully changed feature');
+    print('Is Featured?: $value');
+    isFeatured = value;
+    return value;
+  }
+
+
+  Future<bool?> removeFromFeatured(Question question) async {
+    final String questionId = question.questionId;
+    final value = false;
+    FirebaseFirestore.instance
+        .collection('bookings')
+        .doc(questionId)
+        .update({
+      "isFeatured": value,
+    },
+    );
+    logger.d('Successfully changed feature');
+    print('Is Featured?: $value');
+    isFeatured = value;
+    return value;
+  }
+
+
+
 }

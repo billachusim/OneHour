@@ -2,11 +2,13 @@ import 'package:booking_calendar/booking_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:oneHour/Widgets/special_offer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import '../Models/bookingModel.dart';
 import '../Services/firebaseServices.dart';
+import 'all_activities.dart';
 
 class BookingPage extends StatefulWidget {
   const BookingPage({Key? key}) : super(key: key);
@@ -117,26 +119,48 @@ class _BookingPageState extends State<BookingPage> {
     return Material(
       child: Scaffold(
             appBar: AppBar(
-              title: const Text('Book An Hour'),
-            ),
-            body: Center(
-              child: BookingCalendar(
-                bookingService: mockBookingService,
-                convertStreamResultToDateTimeRanges: convertStreamResultFirebase,
-                getBookingStream: getBookingStreamFirebase,
-                uploadBooking: saveAndUploadBooking,
-                pauseSlots: generatePauseSlots(),
-                pauseSlotText: 'Break',
-                hideBreakTime: false,
-                loadingWidget: const Text('Fetching data...'),
-                uploadingWidget: const CircularProgressIndicator(),
-                //locale: 'hu_HU',
-                startingDayOfWeek: StartingDayOfWeek.sunday,
-                wholeDayIsBookedWidget:
-                const Text('Sorry, for this day everything is booked'),
-                //disabledDates: [DateTime(2023, 1, 20)],
-                //disabledDays: [6, 7],
+              elevation: 2,
+              leading: GestureDetector(
+                  onDoubleTap: () async {
+                    final user = await firebaseServices.getUserInfo();
+                    if (user.userType == 'ADMIN') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AllActivitiesScreen()),
+                      );
+                    }
+                  },
+                  child: Image.asset("assets/images/aiclop.png")
               ),
+              title: const Text("Book An Hour"),
+            ),
+            body: ListView(
+              physics: const BouncingScrollPhysics(),
+              shrinkWrap: true,
+              children: [
+                SpecialOffers(),
+                Container(
+                  height: 700,
+                  child: BookingCalendar(
+                    bookingService: mockBookingService,
+                    convertStreamResultToDateTimeRanges: convertStreamResultFirebase,
+                    getBookingStream: getBookingStreamFirebase,
+                    uploadBooking: saveAndUploadBooking,
+                    pauseSlots: generatePauseSlots(),
+                    pauseSlotText: 'Break',
+                    hideBreakTime: false,
+                    loadingWidget: const Text('Fetching data...'),
+                    uploadingWidget: const CircularProgressIndicator(),
+                    //locale: 'hu_HU',
+                    startingDayOfWeek: StartingDayOfWeek.sunday,
+                    wholeDayIsBookedWidget:
+                    const Text('Sorry, for this day everything is booked'),
+                    //disabledDates: [DateTime(2023, 1, 20)],
+                    //disabledDays: [6, 7],
+                  ),
+                ),
+              ],
             ),
           ),
     );

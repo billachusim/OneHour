@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:oneHour/Screens/booking_page.dart';
-import 'package:oneHour/Screens/homepage.dart';
 import '../services/helper.dart';
 import 'Screens/user_activities.dart';
 import 'Services/firebaseServices.dart';
@@ -29,7 +28,7 @@ class NavbarItem {
 class BottomNavBar extends StatefulWidget {
   static const route = '/bnav';
 
-  BottomNavBar({super.key});
+  const BottomNavBar({super.key});
 
   @override
   State<BottomNavBar> createState() => _BottomNavbarState();
@@ -39,11 +38,11 @@ class _BottomNavbarState extends State<BottomNavBar> {
   final FirebaseServices firebaseServices = FirebaseServices();
   var currentUser = FirebaseAuth.instance.currentUser;
   int _select = 0;
-  PageController _pageController = PageController(initialPage: 0);
+  final PageController _pageController = PageController(initialPage: 0);
 
 
   void setTabIndex(index) async {
-    if (await firebaseServices.isUserSignIn(context))
+    await firebaseServices.isUserSignIn(context);
       _pageController.animateToPage(
           index, duration: Duration(milliseconds: 500),
           curve: Curves.easeInToLinear);
@@ -61,7 +60,7 @@ class _BottomNavbarState extends State<BottomNavBar> {
   }
 
   final screens = [
-    const HomePage(),
+    const BookingPage(),
     ActivitiesScreen()
   ];
 

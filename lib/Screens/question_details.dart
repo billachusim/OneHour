@@ -1,13 +1,12 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../Models/questionModel.dart';
+import 'package:oneHour/Models/bookingModel.dart';
 import '../Services/firebaseServices.dart';
 
 
 class QuestionDetails extends StatefulWidget {
-  final Question question;
+  final BookingModel booking;
 
-  const QuestionDetails({Key? key, required this.question}) : super(key: key);
+  const QuestionDetails({Key? key, required this.booking}) : super(key: key);
 
   @override
   _QuestionDetailsState createState() => _QuestionDetailsState();
@@ -35,7 +34,7 @@ class _QuestionDetailsState extends State<QuestionDetails> {
 
   @override
   Widget build(BuildContext context) {
-    final question = widget.question;
+    final booking = widget.booking;
 
     return Scaffold(
       appBar: AppBar(
@@ -49,44 +48,52 @@ class _QuestionDetailsState extends State<QuestionDetails> {
             SizedBox(height: 4.0),
 
             SelectableText(
-              question.question,
+              booking.bookingId.toString(),
               style: TextStyle(
                 fontSize: 22.0,
                 fontWeight: FontWeight.bold,
-                color: Colors.white70,
+                color: Colors.black,
               ),
             ),
 
             SizedBox(height: 20.0),
             Text(
-              'Nickname: ${question.nickname}',
+              'Nickname: ${booking.nickname}',
               style: TextStyle(
                 fontSize: 15.0,
-                color: Colors.white70,
+                color: Colors.black,
               ),
             ),
             SizedBox(height: 4.0),
             Text(
-              'From: ${question.nameOfSchool}',
+              'From: ${booking.city}',
               style: TextStyle(
                 fontSize: 14.0,
-                color: Colors.white70,
+                color: Colors.black,
               ),
             ),
             SizedBox(height: 4.0),
             Text(
-              'Time: ${question.timestamp}',
+              'Time: ${booking.bookingStart}',
               style: TextStyle(
                 fontSize: 14.0,
-                color: Colors.white70,
+                color: Colors.black,
               ),
             ),
             SizedBox(height: 4.0),
             Text(
-              'Is Featured = ${question.isFeatured}',
+              'Time: ${booking.bookingEnd}',
               style: TextStyle(
                 fontSize: 14.0,
-                color: Colors.white70,
+                color: Colors.black,
+              ),
+            ),
+            SizedBox(height: 4.0),
+            Text(
+              'Is Featured = ${booking.isTrial}',
+              style: TextStyle(
+                fontSize: 14.0,
+                color: Colors.black,
               ),
             ),
             SizedBox(height: 20.0),

@@ -16,7 +16,7 @@ SharedPreferences? prefs;
 
 class FirebaseServices extends ChangeNotifier {
   /// create instance of Firestore
-  FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
 
   User? currentUser = FirebaseAuth.instance.currentUser;
   final String usersKey = 'user';
@@ -34,7 +34,7 @@ class FirebaseServices extends ChangeNotifier {
   /// SignUp user
   Future<bool> register(
       BuildContext context, String email, String password, String nickname, String city, String age, String phoneNumber, String gender,) async {
-    final _user = await FirebaseAuth.instance
+    final user = await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password);
     final theEmail = email;
     final thePassword = password;
@@ -49,16 +49,16 @@ class FirebaseServices extends ChangeNotifier {
       final password = thePassword;
       final timeLastUnlocked = FieldValue.serverTimestamp();
       final timeRegistered = FieldValue.serverTimestamp();
-      final userType = "REGULAR";
+      const userType = "REGULAR";
       final nickname = theNickname;
-      final userId = _user.user?.uid;
+      final userId = user.user?.uid;
       final city = theCity;
       final age = theAge;
       final gender = theGender;
       final phoneNumber = thePhoneNumber;
       FirebaseFirestore.instance
           .collection("users")
-          .doc(_user.user!.uid)
+          .doc(user.user!.uid)
           .set({
         "nickname": nickname,
         "userId": userId,
@@ -78,7 +78,7 @@ class FirebaseServices extends ChangeNotifier {
         print('Email: $email');
       }
 
-      setUsersId(_user.user!.uid);
+      setUsersId(user.user!.uid);
 
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password)
@@ -112,9 +112,9 @@ class FirebaseServices extends ChangeNotifier {
   /// Authenticate the user in
   Future<bool> signIn(
       BuildContext context, String email, String password) async {
-    final _user;
+    final Set<void> user;
     try {
-      _user = await FirebaseAuth.instance
+      user = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password)
           .then((value) => {
         setUsersId(value.user!.uid),
@@ -270,10 +270,10 @@ class FirebaseServices extends ChangeNotifier {
   void deleteUserAccount(BuildContext context, String userId) async {
     await FirebaseAuth.instance.signOut();
     await prefs!.clear();
-    final _userId = userId;
+    final userId0 = userId;
     final collection = FirebaseFirestore.instance
         .collection('users');
-    await collection.doc(_userId).delete();
+    await collection.doc(userId0).delete();
     logger.d('Successfully deleted an account');
     Navigator.push(
       context,

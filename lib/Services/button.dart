@@ -20,9 +20,8 @@ class DefaultButton extends StatelessWidget {
       height: 50,
       child: TextButton(
         style: TextButton.styleFrom(
-          shape:
+          foregroundColor: Colors.black12, shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          primary: Colors.black12,
           backgroundColor: disabled ? Colors.black12 : Colors.green, // Set the button's background color
         ),
         onPressed: disabled ? null : press as void Function()?, // Disable the button if it's disabled
