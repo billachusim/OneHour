@@ -1,17 +1,21 @@
+import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:booking_calendar/booking_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:oneHour/Widgets/special_offer.dart';
+import 'package:oneHour/Screens/profile_page.dart';
+import 'package:oneHour/Screens/splash_screen.dart';
+import 'package:oneHour/Widgets/home_greeting_slides.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import '../Models/bookingModel.dart';
 import '../Services/firebaseServices.dart';
-import 'all_activities.dart';
 
 class BookingPage extends StatefulWidget {
-  const BookingPage({Key? key}) : super(key: key);
+  BookingPage({Key? key}) : super(key: key);
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+  GlobalKey<ScaffoldMessengerState>();
 
   @override
   State<BookingPage> createState() => _BookingPageState();
@@ -38,6 +42,23 @@ class _BookingPageState extends State<BookingPage> {
   }
 
 
+  Event addToCalendar(String userEmail) {
+    return Event(
+      title: 'One Hour Call',
+      description: 'You will talk with an understanding man for one hour',
+      location: 'One Hour App',
+      startDate: mockBookingService.bookingStart,
+      endDate: mockBookingService.bookingEnd,
+      allDay: false,
+      iosParams: const IOSParams(
+        reminder: Duration(minutes: 40),
+        url: "http://nnewitech.com",
+      ),
+      androidParams: AndroidParams(
+        emailInvites: [userEmail, "thesocialfaculty@gmail.com"],
+      ),
+    );
+  }
 
 
   List<DateTimeRange> converted = [];
@@ -81,6 +102,7 @@ class _BookingPageState extends State<BookingPage> {
   Future<dynamic> saveAndUploadBooking({required BookingService newBooking}) async {
     final user = await firebaseServices.getUserInfo();
     final nickname = user.nickname;
+    final userEmail = user.email.toString();
     final city = user.city;
     final age = user.age;
     final gender = user.gender;
@@ -105,9 +127,12 @@ class _BookingPageState extends State<BookingPage> {
       },SetOptions(merge: true));
     } catch (e) {
       if (kDebugMode) {
-        print('Error sending question: $e');
+        print('Error saving booking: $e');
       }
     }
+    Add2Calendar.addEvent2Cal(
+      addToCalendar(userEmail),
+    );
 
     prefs = await SharedPreferences.getInstance();
     prefs!.setString('booking', bookingId);
@@ -127,7 +152,7 @@ class _BookingPageState extends State<BookingPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => AllActivitiesScreen()),
+                            builder: (context) => ProfilePage()),
                       );
                     }
                   },
@@ -139,7 +164,7 @@ class _BookingPageState extends State<BookingPage> {
               physics: const BouncingScrollPhysics(),
               shrinkWrap: true,
               children: [
-                SpecialOffers(),
+                HomeGreetingSlides(),
                 Container(
                   height: 700,
                   child: BookingCalendar(
@@ -151,9 +176,12 @@ class _BookingPageState extends State<BookingPage> {
                     pauseSlotText: 'Break',
                     hideBreakTime: false,
                     loadingWidget: const Text('Fetching data...'),
-                    uploadingWidget: const CircularProgressIndicator(),
+                    uploadingWidget: const SplashPage(),
                     //locale: 'hu_HU',
                     startingDayOfWeek: StartingDayOfWeek.sunday,
+                    bookingButtonColor: Colors.deepPurple,
+                    availableSlotColor: Colors.green,
+                    selectedSlotColor: Colors.blue,
                     wholeDayIsBookedWidget:
                     const Text('Sorry, for this day everything is booked'),
                     //disabledDates: [DateTime(2023, 1, 20)],

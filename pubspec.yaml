@@ -32,6 +32,7 @@ dependencies:
   app_tracking_transparency: ^2.0.3
   uuid: ^3.0.4
   shared_preferences: ^2.0.6
+  add_2_calendar: ^2.1.2
 
 
 

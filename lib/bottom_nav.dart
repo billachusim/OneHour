@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:oneHour/Screens/booking_page.dart';
+import 'package:oneHour/Screens/profile_page.dart';
 import '../services/helper.dart';
-import 'Screens/user_activities.dart';
 import 'Services/firebaseServices.dart';
 
 
@@ -60,8 +60,8 @@ class _BottomNavbarState extends State<BottomNavBar> {
   }
 
   final screens = [
-    const BookingPage(),
-    ActivitiesScreen()
+    BookingPage(),
+    ProfilePage()
   ];
 
 
